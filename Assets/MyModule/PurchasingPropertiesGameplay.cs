@@ -27,7 +27,7 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
     #endregion
 
 
-    public static readonly int NUM_CARDS = 12; // For determining which card is shown
+    public const int NUM_CARDS = 28; // For determining which card is shown
     private int shownCard;
 
     private static int numInstances = 0; // For assigning unique debug ID's to each instance of the module
@@ -39,7 +39,25 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
     public KMBombInfo TheBomb; // Refers to the entire bomb, handles querying various properties of the bomb
     public TextMesh CardDisplay;
 
+    private string correctColor;
+    private string correctPrice;
     private int correctProperty;
+
+    private string[][] propertyArray = new string[][] {
+        new string[] {"purple", "cheap"}, new string[] {"purple", "expensive"},
+        new string[] {"railroad", "reading"},
+        new string[] {"sky", "cheap"}, new string[] {"sky", "middle"}, new string[] {"sky", "expensive"},
+        new string[] {"pink", "cheap"}, new string[] {"utility", "electric"}, new string[] {"pink", "middle"}, new string[] {"pink", "expensive"},
+        new string[] {"railroad", "pennsylvania"},
+        new string[] {"orange", "cheap"}, new string[] {"orange", "middle"}, new string[] {"orange", "expensive"},
+        new string[] {"red", "cheap"}, new string[] {"red", "middle"}, new string[] {"red", "expensive"},
+        new string[] {"railroad", "B&O"},
+        new string[] {"yellow", "cheap"}, new string[] {"yellow", "middle"}, new string[] {"utility", "water"}, new string[] {"yellow", "expensive"},
+        new string[] {"green", "cheap"}, new string[] {"green", "middle"}, new string[] {"green", "expensive"},
+        new string[] {"railroad", "short"},
+        new string[] {"blue", "cheap"}, new string[] {"blue", "expensive"}
+    };
+
 
 
     #region Edgework variables
@@ -58,6 +76,7 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
 
     private int numBatteries;
     private int numBatteryHolders;
+    private int numAABatteries;
 
     private int numIndicators;
     private int numLitIndicators = 0;
@@ -135,6 +154,7 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
         foreach (string battery in batteryList)
         {
             Battery bat = JsonConvert.DeserializeObject<Battery>(battery);
+            if (bat.numbatteries == 2) numAABatteries += 2;
             numBatteries += bat.numbatteries;
         }
         numBatteryHolders = batteryList.Count;
@@ -182,11 +202,55 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
 
     private bool CalculatePropToPurchase()
     {
-        if (hasParallel) correctProperty = 0;
-        else if (hasBOB && !hasLitBOB) correctProperty = 1;
-        else if (numBatteries > 3) correctProperty = 2;
-        else if (numBatteries == 1) correctProperty = 3;
-        else correctProperty = 4;
+        bool reachedCar = false;
+        bool reachedUtil = false;
+
+        #region Colour Rules
+        if (hasParallel) correctColor = "pink";
+        else if ((hasMSA && !hasLitMSA) || (hasLitNSA)) correctColor = "green";
+        else if ((hasNSA && !hasLitNSA) || (hasLitMSA)) correctColor = "blue";
+        else if (numBatteries == 1) correctColor = "yellow";
+        else if (hasPS2 && hasRJ45) correctColor = "orange";
+        else if (hasCAR)
+        {
+            reachedCar = true;
+            correctColor = "railroad";
+            correctPrice = (new string[4] {"reading", "pennsylvania", "B&O", "short"})[numPortPlates % 4];
+        }
+        else if (numPortPlates >= 3) correctColor = "purple";
+        else if (numBatteries % 2 == 0) correctColor = "sky";
+        else if (numAABatteries >= 4) correctColor = "red";
+        else
+        {
+            reachedUtil = true;
+            if (isPrime(numBatteries)) correctPrice = "water";
+            else correctPrice = "electric";
+        }
+        #endregion
+
+
+        #region Price Rules
+        if (reachedCar || reachedUtil) { }
+        else if (hasLitIND) correctPrice = "cheap";
+        else if (hasFRK && !hasLitFRK) correctPrice = "expensive";
+        else if ((serialNumber[5] - '0') % 2 == 0) correctPrice = "cheap";
+        else if (hasIND || hasFRQ) correctPrice = "cheap";
+        else if ((serialNumber.Contains("0")) && (correctColor != "purple" && correctColor != "blue")) correctPrice = "middle";
+        else if (hasCAR)
+        {
+            reachedCar = true;
+            correctColor = "railroad";
+            correctPrice = (new string[4] { "reading", "pennsylvania", "B&O", "short" })[numPortPlates % 4];
+        }
+        else if (numBatteries % 2 == 1) correctPrice = "expensive";
+        else if ((hasTRN) && (correctColor != "purple" && correctColor != "blue")) correctPrice = "middle";
+        else if (correctColor != "pink" && correctColor != "sky") correctPrice = "expensive";
+        else correctPrice = "middle";
+        #endregion
+
+
+        //correctProperty = Array.FindIndex(propertyArray, val => val.Equals(new string[] {correctColor, correctPrice}));
+        correctProperty = Array.FindIndex(propertyArray, val => (val[0] == correctColor && val[1] == correctPrice));
 
         return false;
     }
@@ -220,6 +284,14 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
         }
 
         return false;
+    }
+
+
+
+    private static bool isPrime(int n)
+    {
+        if ((new List<int> {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37}).Contains(n)) return true;
+        else return false;
     }
 
 
