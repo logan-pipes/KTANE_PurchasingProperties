@@ -22,6 +22,7 @@ GameObject:
   - component: {fileID: 193639583393673654}
   - component: {fileID: 33598205627390538}
   - component: {fileID: 23183413609406226}
+  - component: {fileID: 114721533557028688}
   m_Layer: 0
   m_Name: Tree
   m_TagString: Untagged
@@ -763,6 +764,19 @@ MonoBehaviour:
   optimizedSolidMaterial: {fileID: 21024624116016954}
   optimizedCutoutMaterial: {fileID: 21639740017154538}
   isInPreviewMode: 0
+--- !u!114 &114721533557028688
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1069088618621702}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1005838349, guid: 45b809be76fd7a3468b6f517bced6f28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShaderNames:
+  - Hidden/Nature/Tree Creator Bark Optimized
 --- !u!193 &193639583393673654
 Tree:
   m_ObjectHideFlags: 1

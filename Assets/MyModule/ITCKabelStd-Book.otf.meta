@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 31236b1227c65264eabb91cb5cb98d8c
+guid: 9df5231accd657b488e9b9c4a1f6358e
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -8,9 +8,9 @@ TrueTypeFontImporter:
   characterSpacing: 0
   characterPadding: 1
   includeFontData: 1
-  fontName: Monopoly
+  fontName: ITC Kabel Std
   fontNames:
-  - Monopoly
+  - ITC Kabel Std
   fallbackFontReferences: []
   customCharacters: 
   fontRenderingMode: 0

@@ -107,8 +107,8 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
         Arrows[0].OnInteract += () => { CycleCardDisplay(1); return false; } ; // Add the methods to call when the buttons are interacted with to the stack of things to call
         Arrows[1].OnInteract += () => { CycleCardDisplay(-1); return false; } ;
         SubmitButton.OnInteract += Submit;
-        TheModule.OnActivate += GrabEdgeWork;
         TheModule.OnActivate += FillProperties;
+        TheModule.OnActivate += GrabEdgeWork;
     }
 
 
@@ -621,20 +621,11 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
         if (shownCard < 0) shownCard += NUM_CARDS;
         Debug.Log("Module " + moduleInstanceID + " cycled the display in the " + dir + " direction, and now card " + shownCard + " is showing.");
 
-        // if (nonStandardProperties.Contains(shownCard))
-        // {
-        //     // do stuff to toggle shown text for utilities and railroads
-        //     // for (int i = 0; i < NUM_LINES_TEXT; i++) CardDisplay[i].hide ?
-        // }
-        // else
-        // {
-            for (int i = 0; i < NUM_LINES_TEXT; i++)
-            {
-                CardDisplay[i].text = cardText[shownCard][i];
-                // CardDisplay[i].show ?
-            }
-            CardDisplay[0].text = shownCard.ToString(); // Change the actual text on the bomb
-        // }
+        for (int i = 0; i < NUM_LINES_TEXT; i++)
+        {
+            CardDisplay[i].text = cardText[shownCard][i];
+        }
+    
         return false;
     }
 
