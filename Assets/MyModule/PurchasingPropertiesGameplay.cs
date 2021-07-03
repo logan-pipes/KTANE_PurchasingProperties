@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
+using System.Linq;
 
 public class PurchasingPropertiesGameplay : MonoBehaviour {
     
@@ -27,7 +27,7 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
     #endregion
 
 
-    public const int NUM_CARDS = 28; // For determining which card is shown
+    private const int NUM_CARDS = 28; // For determining which card is shown
     private int shownCard;
 
     private static int numInstances = 0; // For assigning unique debug ID's to each instance of the module
@@ -37,26 +37,19 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
     public KMSelectable SubmitButton;
     public KMBombModule TheModule; // Refers to the specific instance of PurchasingProperties, handles strikes/solves
     public KMBombInfo TheBomb; // Refers to the entire bomb, handles querying various properties of the bomb
-    public TextMesh CardDisplay;
+
+    private const int NUM_LINES_TEXT = 13;
+    public TextMesh[] CardDisplay = new TextMesh[NUM_LINES_TEXT];
+
+    private string[][] cardText = new string[NUM_CARDS][];
 
     private string correctColor;
     private string correctPrice;
     private int correctProperty;
 
-    private string[][] propertyArray = new string[][] {
-        new string[] {"purple", "cheap"}, new string[] {"purple", "expensive"},
-        new string[] {"railroad", "reading"},
-        new string[] {"sky", "cheap"}, new string[] {"sky", "middle"}, new string[] {"sky", "expensive"},
-        new string[] {"pink", "cheap"}, new string[] {"utility", "electric"}, new string[] {"pink", "middle"}, new string[] {"pink", "expensive"},
-        new string[] {"railroad", "pennsylvania"},
-        new string[] {"orange", "cheap"}, new string[] {"orange", "middle"}, new string[] {"orange", "expensive"},
-        new string[] {"red", "cheap"}, new string[] {"red", "middle"}, new string[] {"red", "expensive"},
-        new string[] {"railroad", "B&O"},
-        new string[] {"yellow", "cheap"}, new string[] {"yellow", "middle"}, new string[] {"utility", "water"}, new string[] {"yellow", "expensive"},
-        new string[] {"green", "cheap"}, new string[] {"green", "middle"}, new string[] {"green", "expensive"},
-        new string[] {"railroad", "short"},
-        new string[] {"blue", "cheap"}, new string[] {"blue", "expensive"}
-    };
+    private string[][] propertyArray;
+
+    private int[] nonStandardProperties;
 
 
 
@@ -115,6 +108,371 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
         Arrows[1].OnInteract += () => { CycleCardDisplay(-1); return false; } ;
         SubmitButton.OnInteract += Submit;
         TheModule.OnActivate += GrabEdgeWork;
+        TheModule.OnActivate += FillProperties;
+    }
+
+
+
+    private void FillProperties()
+    {
+        // for (int i = 0; i < NUM_LINES_TEXT; i++)
+        // {
+        //     CardDisplay[i] = new TextMesh();
+        // }
+        propertyArray = new string[][] {
+            new string[] {"purple", "cheap"}, new string[] {"purple", "expensive"},
+            new string[] {"railroad", "reading"},
+            new string[] {"sky", "cheap"}, new string[] {"sky", "middle"}, new string[] {"sky", "expensive"},
+            new string[] {"pink", "cheap"}, new string[] {"utility", "electric"}, new string[] {"pink", "middle"}, new string[] {"pink", "expensive"},
+            new string[] {"railroad", "pennsylvania"},
+            new string[] {"orange", "cheap"}, new string[] {"orange", "middle"}, new string[] {"orange", "expensive"},
+            new string[] {"red", "cheap"}, new string[] {"red", "middle"}, new string[] {"red", "expensive"},
+            new string[] {"railroad", "B&O"},
+            new string[] {"yellow", "cheap"}, new string[] {"yellow", "middle"}, new string[] {"utility", "water"}, new string[] {"yellow", "expensive"},
+            new string[] {"green", "cheap"}, new string[] {"green", "middle"}, new string[] {"green", "expensive"},
+            new string[] {"railroad", "short"},
+            new string[] {"blue", "cheap"}, new string[] {"blue", "expensive"}
+        };
+
+        #region Standard Card Text
+        cardText[0] = new string[] {"TITLE DEED",
+        "MEDITERRANEAN AVE.",
+"RENT $2.",
+"With 1 House $ 10.",
+"With 2 Houses  30.",
+"With 3 Houses  90.",
+"With 4 Houses  160.",
+"With HOTEL $250.",
+"Mortgage Value $30.",
+"Houses cost $50. each",
+"Hotels, $50. plus 4 houses",
+"If a player owns ALL the Lots of any Color-Group, the",
+"rent is Doubled on Unimproved Lots in that group." };
+        cardText[1] = new string[] {"TITLE DEED",
+"BALTIC AVE.",
+"RENT $4.",
+"With 1 House $ 20.",
+"With 2 Houses  60.",
+"With 3 Houses  180.",
+"With 4 Houses  320.",
+"With HOTEL $450.",
+"Mortgage Value $30.",
+"Houses cost $50. each",
+"Hotels, $50. plus 4 houses",
+"If a player owns ALL the Lots of any Color-Group, the",
+"rent is Doubled on Unimproved Lots in that group." };
+        cardText[3] = new string[] {"TITLE DEED",
+"ORIENTAL AVE.",
+"RENT $6.",
+"With 1 House $ 30.",
+"With 2 Houses  90.",
+"With 3 Houses  270.",
+"With 4 Houses  400.",
+"With HOTEL $550.",
+"Mortgage Value $50.",
+"Houses cost $50. each",
+"Hotels, $50. plus 4 houses",
+"If a player owns ALL the Lots of any Color-Group, the",
+"rent is Doubled on Unimproved Lots in that group." };
+        cardText[4] = new string[] {"TITLE DEED",
+"VERMONT AVE.",
+"RENT $6.",
+"With 1 House $ 30.",
+"With 2 Houses  90.",
+"With 3 Houses  270.",
+"With 4 Houses  400.",
+"With HOTEL $550.",
+"Mortgage Value $50.",
+"Houses cost $50. each",
+"Hotels, $50. plus 4 houses",
+"If a player owns ALL the Lots of any Color-Group, the",
+"rent is Doubled on Unimproved Lots in that group." };
+        cardText[5] = new string[] {"TITLE DEED",
+"CONNECTICUT AVE.",
+"RENT $8.",
+"With 1 House $ 40.",
+"With 2 Houses  100.",
+"With 3 Houses  300.",
+"With 4 Houses  450.",
+"With HOTEL $600.",
+"Mortgage Value $60.",
+"Houses cost $50. each",
+"Hotels, $50. plus 4 houses",
+"If a player owns ALL the Lots of any Color-Group, the",
+"rent is Doubled on Unimproved Lots in that group." };
+        cardText[6] = new string[] {"TITLE DEED",
+"St. CHARLES PLACE",
+"RENT $10.",
+"With 1 House $ 50.",
+"With 2 Houses  150.",
+"With 3 Houses  450.",
+"With 4 Houses  625.",
+"With HOTEL $750.",
+"Mortgage Value $70.",
+"Houses cost $100. each",
+"Hotels, $100. plus 4 houses",
+"If a player owns ALL the Lots of any Color-Group, the",
+"rent is Doubled on Unimproved Lots in that group." };
+        cardText[8] = new string[] {"TITLE DEED",
+"STATES AVE.",
+"RENT $10.",
+"With 1 House $ 50.",
+"With 2 Houses  150.",
+"With 3 Houses  450.",
+"With 4 Houses  625.",
+"With HOTEL $750.",
+"Mortgage Value $70.",
+"Houses cost $100. each",
+"Hotels, $100. plus 4 houses",
+"If a player owns ALL the Lots of any Color-Group, the",
+"rent is Doubled on Unimproved Lots in that group." };
+        cardText[9] = new string[] {"TITLE DEED",
+"VIRGINIA AVE.",
+"RENT $12.",
+"With 1 House $ 60.",
+"With 2 Houses  180.",
+"With 3 Houses  500.",
+"With 4 Houses  700.",
+"With HOTEL $900.",
+"Mortgage Value $80.",
+"Houses cost $100. each",
+"Hotels, $100. plus 4 houses",
+"If a player owns ALL the Lots of any Color-Group, the",
+"rent is Doubled on Unimproved Lots in that group." };
+        cardText[11] = new string[] {"TITLE DEED",
+"ST. JAMES PLACE",
+"RENT $14.",
+"With 1 House $ 70.",
+"With 2 Houses  200.",
+"With 3 Houses  550.",
+"With 4 Houses  750.",
+"With HOTEL $950.",
+"Mortgage Value $90.",
+"Houses cost $100. each",
+"Hotels, $100. plus 4 houses",
+"If a player owns ALL the Lots of any Color-Group, the",
+"rent is Doubled on Unimproved Lots in that group." };
+        cardText[12] = new string[] {"TITLE DEED",
+"TENNESSEE AVE.",
+"RENT $14.",
+"With 1 House $ 70.",
+"With 2 Houses  200.",
+"With 3 Houses  550.",
+"With 4 Houses  750.",
+"With HOTEL $950.",
+"Mortgage Value $90.",
+"Houses cost $100. each",
+"Hotels, $100. plus 4 houses",
+"If a player owns ALL the Lots of any Color-Group, the",
+"rent is Doubled on Unimproved Lots in that group." };
+        cardText[13] = new string[] {"TITLE DEED",
+"NEW YORK AVE.",
+"RENT $16.",
+"With 1 House $ 80.",
+"With 2 Houses  220.",
+"With 3 Houses  600.",
+"With 4 Houses  800.",
+"With HOTEL $1000.",
+"Mortgage Value $100.",
+"Houses cost $100. each",
+"Hotels, $100. plus 4 houses",
+"If a player owns ALL the Lots of any Color-Group, the",
+"rent is Doubled on Unimproved Lots in that group." };
+        cardText[14] = new string[] {"TITLE DEED",
+"KENTUCKY AVE.",
+"RENT $18.",
+"With 1 House $ 90.",
+"With 2 Houses  250.",
+"With 3 Houses  700.",
+"With 4 Houses  875.",
+"With HOTEL $1050.",
+"Mortgage Value $110.",
+"Houses cost $150. each",
+"Hotels, $150. plus 4 houses",
+"If a player owns ALL the Lots of any Color-Group, the",
+"rent is Doubled on Unimproved Lots in that group." };
+        cardText[15] = new string[] {"TITLE DEED",
+"INDIANA AVE.",
+"RENT $18.",
+"With 1 House $ 90.",
+"With 2 Houses  250.",
+"With 3 Houses  700.",
+"With 4 Houses  875.",
+"With HOTEL $1050.",
+"Mortgage Value $110.",
+"Houses cost $150. each",
+"Hotels, $150. plus 4 houses",
+"If a player owns ALL the Lots of any Color-Group, the",
+"rent is Doubled on Unimproved Lots in that group." };
+        cardText[16] = new string[] {"TITLE DEED",
+"ILLINOIS AVE.",
+"RENT $20.",
+"With 1 House $ 100.",
+"With 2 Houses  300.",
+"With 3 Houses  750.",
+"With 4 Houses  925.",
+"With HOTEL $1100.",
+"Mortgage Value $120.",
+"Houses cost $150. each",
+"Hotels, $150. plus 4 houses",
+"If a player owns ALL the Lots of any Color-Group, the",
+"rent is Doubled on Unimproved Lots in that group." };
+        cardText[18] = new string[] {"TITLE DEED",
+"ATLANTIC AVE.",
+"RENT $22.",
+"With 1 House $ 110.",
+"With 2 Houses  330.",
+"With 3 Houses  800.",
+"With 4 Houses  975.",
+"With HOTEL $1150.",
+"Mortgage Value $130.",
+"Houses cost $150. each",
+"Hotels, $150. plus 4 houses",
+"If a player owns ALL the Lots of any Color-Group, the",
+"rent is Doubled on Unimproved Lots in that group." };
+        cardText[19] = new string[] {"TITLE DEED",
+"VENTNOR AVE.",
+"RENT $22.",
+"With 1 House $ 110.",
+"With 2 Houses  330.",
+"With 3 Houses  800.",
+"With 4 Houses  975.",
+"With HOTEL $1150.",
+"Mortgage Value $130.",
+"Houses cost $150. each",
+"Hotels, $150. plus 4 houses",
+"If a player owns ALL the Lots of any Color-Group, the",
+"rent is Doubled on Unimproved Lots in that group." };
+        cardText[21] = new string[] {"TITLE DEED",
+"MARVIN GARDENS",
+"RENT $24.",
+"With 1 House $ 120.",
+"With 2 Houses  360.",
+"With 3 Houses  850.",
+"With 4 Houses  1025.",
+"With HOTEL $1200.",
+"Mortgage Value $140.",
+"Houses cost $150. each",
+"Hotels, $150. plus 4 houses",
+"If a player owns ALL the Lots of any Color-Group, the",
+"rent is Doubled on Unimproved Lots in that group." };
+        cardText[22] = new string[] {"TITLE DEED",
+"PACIFIC AVE.",
+"RENT $26.",
+"With 1 House $ 130.",
+"With 2 Houses  390.",
+"With 3 Houses  900.",
+"With 4 Houses  1100.",
+"With HOTEL $1275.",
+"Mortgage Value $150.",
+"Houses cost $200. each",
+"Hotels, $200. plus 4 houses",
+"If a player owns ALL the Lots of any Color-Group, the",
+"rent is Doubled on Unimproved Lots in that group." };
+        cardText[23] = new string[] {"TITLE DEED",
+"NO. CAROLINA AVE.",
+"RENT $26.",
+"With 1 House $ 130.",
+"With 2 Houses  390.",
+"With 3 Houses  900.",
+"With 4 Houses  1100.",
+"With HOTEL $1275.",
+"Mortgage Value $150.",
+"Houses cost $200. each",
+"Hotels, $200. plus 4 houses",
+"If a player owns ALL the Lots of any Color-Group, the",
+"rent is Doubled on Unimproved Lots in that group." };
+        cardText[24] = new string[] {"TITLE DEED",
+"PENNSYLVANIA AVE.",
+"RENT $28.",
+"With 1 House $ 150.",
+"With 2 Houses  450.",
+"With 3 Houses  1000.",
+"With 4 Houses  1200.",
+"With HOTEL $1400.",
+"Mortgage Value $160.",
+"Houses cost $200. each",
+"Hotels, $200. plus 4 houses",
+"If a player owns ALL the Lots of any Color-Group, the",
+"rent is Doubled on Unimproved Lots in that group." };
+        cardText[26] = new string[] {"TITLE DEED",
+"PARK PLACE",
+"RENT $35.",
+"With 1 House $ 175.",
+"With 2 Houses  500.",
+"With 3 Houses  1100.",
+"With 4 Houses  1300.",
+"With HOTEL $1500.",
+"Mortgage Value $175.",
+"Houses cost $200. each",
+"Hotels, $200. plus 4 houses",
+"If a player owns ALL the Lots of any Color-Group, the",
+"rent is Doubled on Unimproved Lots in that group." };
+        cardText[27] = new string[] {"TITLE DEED",
+"BOARDWALK",
+"RENT $50.",
+"With 1 House $ 200.",
+"With 2 Houses  600.",
+"With 3 Houses  1400.",
+"With 4 Houses  1700.",
+"With HOTEL $2000.",
+"Mortgage Value $200.",
+"Houses cost $200. each",
+"Hotels, $200. plus 4 houses",
+"If a player owns ALL the Lots of any Color-Group, the",
+"rent is Doubled on Unimproved Lots in that group." };
+        #endregion
+
+        nonStandardProperties = new int[] { 2, 7, 10, 17, 20, 25 };
+        #region Non-Standard Card Text
+        cardText[2]  = new string[] {"","","",
+"READING RAILROAD", "",
+"Rent $25.",
+"If 2 R.R.'s are owned 50.",
+"If 3 \" \" \" 100.",
+"If 4 \" \" \" 200.", "",
+"Mortgage Value 100.", "", "" };
+        cardText[10] = new string[] {"","","",
+"PENNSYLVANIA R.R.", "",
+"Rent $25.",
+"If 2 R.R.'s are owned 50.",
+"If 3 \" \" \" 100.",
+"If 4 \" \" \" 200.", "",
+"Mortgage Value 100.", "", "" };
+        cardText[17] = new string[] {"","","",
+"B.&O. RAILROAD", "",
+"Rent $25.",
+"If 2 R.R.'s are owned 50.",
+"If 3 \" \" \" 100.",
+"If 4 \" \" \" 200.", "",
+"Mortgage Value 100.", "", "" };
+        cardText[25] = new string[] {"","","",
+"SHORT LINE R.R.", "",
+"Rent $25.",
+"If 2 R.R.'s are owned 50.",
+"If 3 \" \" \" 100.",
+"If 4 \" \" \" 200.", "",
+"Mortgage Value 100.", "", "" };
+
+        cardText[7] = new string[] {"","",
+"WATER WORKS", "",
+"If one \"Utility\" is owned",
+"rent is 4 times amount shown",
+"on dice.",
+"If both \"Utilities\" are owned",
+"rent is 10 times amount shown",
+"on dice.",
+"Mortgage Value $75.", "", ""};
+        cardText[20] = new string[] {"","",
+"ELECTRIC COMPANY", "",
+"If one \"Utility\" is owned",
+"rent is 4 times amount shown",
+"on dice.",
+"If both \"Utilities\" are owned",
+"rent is 10 times amount shown",
+"on dice.",
+"Mortgage Value $75.", "", "" };
+        #endregion
     }
 
 
@@ -263,8 +621,20 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
         if (shownCard < 0) shownCard += NUM_CARDS;
         Debug.Log("Module " + moduleInstanceID + " cycled the display in the " + dir + " direction, and now card " + shownCard + " is showing.");
 
-        CardDisplay.text = shownCard.ToString(); // Change the actual text on the bomb
-
+        // if (nonStandardProperties.Contains(shownCard))
+        // {
+        //     // do stuff to toggle shown text for utilities and railroads
+        //     // for (int i = 0; i < NUM_LINES_TEXT; i++) CardDisplay[i].hide ?
+        // }
+        // else
+        // {
+            for (int i = 0; i < NUM_LINES_TEXT; i++)
+            {
+                CardDisplay[i].text = cardText[shownCard][i];
+                // CardDisplay[i].show ?
+            }
+            CardDisplay[0].text = shownCard.ToString(); // Change the actual text on the bomb
+        // }
         return false;
     }
 
