@@ -1,4 +1,17 @@
-﻿using System;
+﻿/*
+ * PurchasingPropertiesGameplay.cs
+ * 
+ * A KTANE mod based on the classic board game Monopoly.
+ * 
+ * Written by Logan Pipes
+ * With help from Flamanis
+ * 
+ * Published for KTaNE Modding Jam #1
+ * on July 5, 2021.
+ */
+
+
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
@@ -54,20 +67,21 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
     public KMSelectable SubmitButton;
     public KMBombModule TheModule; // Refers to the specific instance of PurchasingProperties, handles strikes/solves
     public KMBombInfo TheBomb; // Refers to the entire bomb, handles querying various properties of the bomb
-    public GameObject UtilityWater;
-    public GameObject UtilityElectric;
-    public GameObject RailroadTrain;
-    public MeshRenderer ColorBar;
 
     private const int NUM_LINES_TEXT = 9;
-    public TextMesh[] CardDisplay = new TextMesh[NUM_LINES_TEXT];
-
+    public TextMesh[] CardDisplay = new TextMesh[NUM_LINES_TEXT]; // Refers to the lines of text on the property cards
     private string[][] cardText = new string[NUM_CARDS][];
-    private bool waterShown = false;
+
+    public GameObject UtilityWater; // Refers to the sprites
+    public GameObject UtilityElectric;
+    public GameObject RailroadTrain;
+    private bool waterShown = false; // For showing/hiding the sprites
     private bool lightbulbShown = false;
     private bool trainShown = false;
 
-    private UnityEngine.Color[] monopolyColors = new UnityEngine.Color[10]
+    public MeshRenderer ColorBar; // Refers to the color background on the standard properties
+
+    private UnityEngine.Color[] monopolyColors = new UnityEngine.Color[10] // The colors on the color bar, also used for determining the correct property
     {
         new UnityEngine.Color(75/255f, 0f, 130/255f), // Indigo
         new UnityEngine.Color(135/255f, 206/255f, 235/255f), // SkyBlue
@@ -81,12 +95,12 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
         new UnityEngine.Color(1f, 1f, 1f) // White - utility
     };
     public string[] monopolyPrices = new string[] { "cheap", "middle", "expensive" };
+    private PropertyStruct[] propertyArray;
 
-    private UnityEngine.Color correctColor;
+    private UnityEngine.Color correctColor; // For determining the correct property
     private string correctPrice;
     private int correctProperty;
 
-    private PropertyStruct[] propertyArray;
 
 
     #region Edgework variables
@@ -134,6 +148,7 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
     // Fills out the property string arrays, runs in Start()
     private void FillProperties()
     {
+        // The properties of the game
         propertyArray = new PropertyStruct[28] {
             new PropertyStruct(monopolyColors[0], monopolyPrices[0]), new PropertyStruct(monopolyColors[0], monopolyPrices[2]),
             new PropertyStruct(monopolyColors[8], "reading"),
@@ -149,6 +164,7 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
             new PropertyStruct(monopolyColors[7], monopolyPrices[0]), new PropertyStruct(monopolyColors[7], monopolyPrices[2])
         };
 
+        // Each row is a shownCard, each entry in that row corresponds to the text in a TextMesh object for that card
         #region Standard Card Text
         cardText[0] = new string[] {
         "MEDITERRANEAN AVE.",
@@ -500,7 +516,7 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
         }
         else if (numPortPlates >= 3) correctColor = monopolyColors[0];
         else if (numBatteries % 2 == 0) correctColor = monopolyColors[1];
-        else if (numAABatteries >= 4) correctColor = monopolyColors[4]; // TODO - Does this work for AA batteries?
+        else if (numAABatteries >= 4) correctColor = monopolyColors[4];
         else
         {
             reachedUtil = true;
@@ -515,7 +531,7 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
         if (reachedCar || reachedUtil) { }
         else if (hasLitIND) correctPrice = monopolyPrices[0];
         else if (hasFRK && !hasLitFRK) correctPrice = monopolyPrices[2];
-        else if ((serialNumber[5] - '0') % 2 == 0) correctPrice = monopolyPrices[0]; // TODO - Does this work for last digit serial is even
+        else if ((serialNumber[5] - '0') % 2 == 0) correctPrice = monopolyPrices[0];
         else if (hasIND || hasFRQ) correctPrice = monopolyPrices[0];
         else if ((serialNumber.Contains("0")) && (correctColor != monopolyColors[0] && correctColor != monopolyColors[7])) correctPrice = monopolyPrices[1];
         else if (hasCAR)
@@ -531,7 +547,7 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
         #endregion
 
 
-        correctProperty = Array.FindIndex(propertyArray, val => (val.propColor == correctColor && val.propPrice == correctPrice));
+        correctProperty = Array.FindIndex(propertyArray, val => (val.propColor == correctColor && val.propPrice == correctPrice)); // the index of the PropertyStruct that has the same color and price
 
         return false;
     }
@@ -546,7 +562,7 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
 
         for (int i = 0; i < NUM_LINES_TEXT; i++)
         {
-            CardDisplay[i].text = cardText[shownCard][i];
+            CardDisplay[i].text = cardText[shownCard][i]; // Set each TextMesh object to have the correct text corresponding to the shown card and line
         }
 
         #region Display Faucet
@@ -588,7 +604,7 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
         }
         #endregion
 
-        ColorBar.material.color = propertyArray[shownCard].propColor;
+        ColorBar.material.color = propertyArray[shownCard].propColor; // Changes the color of the card background
 
         return false;
     }

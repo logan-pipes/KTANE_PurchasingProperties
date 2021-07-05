@@ -2209,10 +2209,6 @@ MonoBehaviour:
   SubmitButton: {fileID: 114030438149868698}
   TheModule: {fileID: 114613680540753506}
   TheBomb: {fileID: 114804714355479780}
-  UtilityWater: {fileID: 1665554997863228}
-  UtilityElectric: {fileID: 1641165835669450}
-  RailroadTrain: {fileID: 1139490484912890}
-  ColorBar: {fileID: 23853264100624826}
   CardDisplay:
   - {fileID: 102974316660933416}
   - {fileID: 102797907113438358}
@@ -2223,6 +2219,10 @@ MonoBehaviour:
   - {fileID: 102383981979532646}
   - {fileID: 102502227413870518}
   - {fileID: 102414849226678466}
+  UtilityWater: {fileID: 1665554997863228}
+  UtilityElectric: {fileID: 1641165835669450}
+  RailroadTrain: {fileID: 1139490484912890}
+  ColorBar: {fileID: 23853264100624826}
   monopolyPrices:
   - cheap
   - middle
