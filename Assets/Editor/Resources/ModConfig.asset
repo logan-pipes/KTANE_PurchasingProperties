@@ -13,10 +13,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: PurchasingProperties
   title: Purchasing Properties
-  author: 
+  author: The-nth-Term
   description: "A KTANE mod based on the classic board game Monopoly.\r\n\nWritten
-    by Logan Pipes\r\nWith help from Flamanis\r\n\nPublished for KTaNE Modding Jam
-    #1\r on July 5, 2021.\r"
+    by The-nth-Term\nWith help from Flamanis\r\n\nPublished for KTaNE Modding Jam
+    #1\r on July 5, 2021.\r\n\nManual here:\nhttps://ktane.timwi.de/HTML/Purchasing%20Properties.html"
   version: 
   outputFolder: build
   previewImage: {fileID: 2800000, guid: d60daec8d7905244b83149cfcca24bb9, type: 3}
