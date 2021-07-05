@@ -25,6 +25,24 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
     }
     #endregion
 
+    private struct PropertyStruct
+    {
+        public string propPrice;
+        public UnityEngine.Color propColor;
+        public PropertyStruct(UnityEngine.Color colo, string price)
+        {
+            propColor = colo;
+            propPrice = price;
+        }
+        
+        public override bool Equals(object obj)
+        {
+            if (!(obj is PropertyStruct)) return false;
+            PropertyStruct s = (PropertyStruct)obj;
+            return (s.propColor == propColor && s.propPrice == propPrice);
+        }
+    }
+
     #region Initializations
     private const int NUM_CARDS = 28; // For determining which card is shown
     private int shownCard;
@@ -36,20 +54,39 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
     public KMSelectable SubmitButton;
     public KMBombModule TheModule; // Refers to the specific instance of PurchasingProperties, handles strikes/solves
     public KMBombInfo TheBomb; // Refers to the entire bomb, handles querying various properties of the bomb
-    public Sprite UtilityWater;
-    public Sprite UtilityElectric;
+    public GameObject UtilityWater;
+    public GameObject UtilityElectric;
+    public GameObject RailroadTrain;
+    public MeshRenderer ColorBar;
 
     private const int NUM_LINES_TEXT = 9;
     public TextMesh[] CardDisplay = new TextMesh[NUM_LINES_TEXT];
 
-    // private List<int> nonStandardCards;
     private string[][] cardText = new string[NUM_CARDS][];
+    private bool waterShown = false;
+    private bool lightbulbShown = false;
+    private bool trainShown = false;
 
-    private string correctColor;
+    private UnityEngine.Color[] monopolyColors = new UnityEngine.Color[10]
+    {
+        new UnityEngine.Color(75/255f, 0f, 130/255f), // Indigo
+        new UnityEngine.Color(135/255f, 206/255f, 235/255f), // SkyBlue
+        new UnityEngine.Color(1f, 20/255f, 147/255f), // DeepPink
+        new UnityEngine.Color(1f, 165/255f, 0f), // Orange
+        new UnityEngine.Color(1f, 0f, 0f), // Red
+        new UnityEngine.Color(1f, 1f, 0f), // Yellow
+        new UnityEngine.Color(0f, 128/255f, 0f), // Green
+        new UnityEngine.Color(0f, 0f, 1f), // Blue
+        new UnityEngine.Color(1f, 1f, 1f), // White - railroad
+        new UnityEngine.Color(1f, 1f, 1f) // White - utility
+    };
+    public string[] monopolyPrices = new string[] { "cheap", "middle", "expensive" };
+
+    private UnityEngine.Color correctColor;
     private string correctPrice;
     private int correctProperty;
 
-    private string[][] propertyArray;
+    private PropertyStruct[] propertyArray;
 
 
     #region Edgework variables
@@ -97,19 +134,19 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
     // Fills out the property string arrays, runs in Start()
     private void FillProperties()
     {
-        propertyArray = new string[][] {
-            new string[] {"purple", "cheap"}, new string[] {"purple", "expensive"},
-            new string[] {"railroad", "reading"},
-            new string[] {"sky", "cheap"}, new string[] {"sky", "middle"}, new string[] {"sky", "expensive"},
-            new string[] {"pink", "cheap"}, new string[] {"utility", "electric"}, new string[] {"pink", "middle"}, new string[] {"pink", "expensive"},
-            new string[] {"railroad", "pennsylvania"},
-            new string[] {"orange", "cheap"}, new string[] {"orange", "middle"}, new string[] {"orange", "expensive"},
-            new string[] {"red", "cheap"}, new string[] {"red", "middle"}, new string[] {"red", "expensive"},
-            new string[] {"railroad", "B&O"},
-            new string[] {"yellow", "cheap"}, new string[] {"yellow", "middle"}, new string[] {"utility", "water"}, new string[] {"yellow", "expensive"},
-            new string[] {"green", "cheap"}, new string[] {"green", "middle"}, new string[] {"green", "expensive"},
-            new string[] {"railroad", "short"},
-            new string[] {"blue", "cheap"}, new string[] {"blue", "expensive"}
+        propertyArray = new PropertyStruct[28] {
+            new PropertyStruct(monopolyColors[0], monopolyPrices[0]), new PropertyStruct(monopolyColors[0], monopolyPrices[2]),
+            new PropertyStruct(monopolyColors[8], "reading"),
+            new PropertyStruct(monopolyColors[1], monopolyPrices[0]), new PropertyStruct(monopolyColors[1], monopolyPrices[1]), new PropertyStruct(monopolyColors[1], monopolyPrices[2]),
+            new PropertyStruct(monopolyColors[2], monopolyPrices[0]), new PropertyStruct(monopolyColors[9], "electric"), new PropertyStruct(monopolyColors[2], monopolyPrices[1]), new PropertyStruct(monopolyColors[2], monopolyPrices[2]),
+            new PropertyStruct(monopolyColors[8], "pennsylvania"),
+            new PropertyStruct(monopolyColors[3], monopolyPrices[0]), new PropertyStruct(monopolyColors[3], monopolyPrices[1]), new PropertyStruct(monopolyColors[3], monopolyPrices[2]),
+            new PropertyStruct(monopolyColors[4], monopolyPrices[0]), new PropertyStruct(monopolyColors[4], monopolyPrices[1]), new PropertyStruct(monopolyColors[4], monopolyPrices[2]),
+            new PropertyStruct(monopolyColors[8], "B&O"),
+            new PropertyStruct(monopolyColors[5], monopolyPrices[0]), new PropertyStruct(monopolyColors[5], monopolyPrices[1]), new PropertyStruct(monopolyColors[9], "water"), new PropertyStruct(monopolyColors[5], monopolyPrices[2]),
+            new PropertyStruct(monopolyColors[6], monopolyPrices[0]), new PropertyStruct(monopolyColors[6], monopolyPrices[1]), new PropertyStruct(monopolyColors[6], monopolyPrices[2]),
+            new PropertyStruct(monopolyColors[8], "short"),
+            new PropertyStruct(monopolyColors[7], monopolyPrices[0]), new PropertyStruct(monopolyColors[7], monopolyPrices[2])
         };
 
         #region Standard Card Text
@@ -335,7 +372,6 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
 "Hotels, $200. plus 4 houses"};
         #endregion
 
-        //nonStandardCards = new List<int> { 2, 7, 10, 17, 20, 25 };
         #region Non-Standard Card Text
         cardText[2]  = new string[] {"",
 "READING RAILROAD", "","",
@@ -451,23 +487,24 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
         bool reachedUtil = false;
 
         #region Colour Rules
-        if (hasParallel) correctColor = "pink";
-        else if ((hasMSA && !hasLitMSA) || (hasLitNSA)) correctColor = "green";
-        else if ((hasNSA && !hasLitNSA) || (hasLitMSA)) correctColor = "blue";
-        else if (numBatteries == 1) correctColor = "yellow";
-        else if (hasPS2 && hasRJ45) correctColor = "orange";
+        if (hasParallel) correctColor = monopolyColors[2];
+        else if ((hasMSA && !hasLitMSA) || (hasLitNSA)) correctColor = monopolyColors[6];
+        else if (hasNSA || hasLitMSA) correctColor = monopolyColors[7];
+        else if (numBatteries == 1) correctColor = monopolyColors[5];
+        else if (hasPS2 && hasRJ45) correctColor = monopolyColors[3];
         else if (hasCAR)
         {
             reachedCar = true;
-            correctColor = "railroad";
+            correctColor = monopolyColors[8];
             correctPrice = (new string[4] {"reading", "pennsylvania", "B&O", "short"})[numPortPlates % 4];
         }
-        else if (numPortPlates >= 3) correctColor = "purple";
-        else if (numBatteries % 2 == 0) correctColor = "sky";
-        else if (numAABatteries >= 4) correctColor = "red";
+        else if (numPortPlates >= 3) correctColor = monopolyColors[0];
+        else if (numBatteries % 2 == 0) correctColor = monopolyColors[1];
+        else if (numAABatteries >= 4) correctColor = monopolyColors[4]; // TODO - Does this work for AA batteries?
         else
         {
             reachedUtil = true;
+            correctColor = monopolyColors[9];
             if (isPrime(numBatteries)) correctPrice = "water";
             else correctPrice = "electric";
         }
@@ -476,25 +513,25 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
 
         #region Price Rules
         if (reachedCar || reachedUtil) { }
-        else if (hasLitIND) correctPrice = "cheap";
-        else if (hasFRK && !hasLitFRK) correctPrice = "expensive";
-        else if ((serialNumber[5] - '0') % 2 == 0) correctPrice = "cheap";
-        else if (hasIND || hasFRQ) correctPrice = "cheap";
-        else if ((serialNumber.Contains("0")) && (correctColor != "purple" && correctColor != "blue")) correctPrice = "middle";
+        else if (hasLitIND) correctPrice = monopolyPrices[0];
+        else if (hasFRK && !hasLitFRK) correctPrice = monopolyPrices[2];
+        else if ((serialNumber[5] - '0') % 2 == 0) correctPrice = monopolyPrices[0]; // TODO - Does this work for last digit serial is even
+        else if (hasIND || hasFRQ) correctPrice = monopolyPrices[0];
+        else if ((serialNumber.Contains("0")) && (correctColor != monopolyColors[0] && correctColor != monopolyColors[7])) correctPrice = monopolyPrices[1];
         else if (hasCAR)
         {
             reachedCar = true;
-            correctColor = "railroad";
+            correctColor = monopolyColors[8];
             correctPrice = (new string[4] { "reading", "pennsylvania", "B&O", "short" })[numPortPlates % 4];
         }
-        else if (numBatteries % 2 == 1) correctPrice = "expensive";
-        else if ((hasTRN) && (correctColor != "purple" && correctColor != "blue")) correctPrice = "middle";
-        else if (correctColor != "pink" && correctColor != "sky") correctPrice = "expensive";
-        else correctPrice = "middle";
+        else if (numBatteries % 2 == 1) correctPrice = monopolyPrices[2];
+        else if ((hasTRN) && (correctColor != monopolyColors[0] && correctColor != monopolyColors[7])) correctPrice = monopolyPrices[1];
+        else if (correctColor != monopolyColors[2] && correctColor != monopolyColors[1]) correctPrice = monopolyPrices[2];
+        else correctPrice = monopolyPrices[1];
         #endregion
 
 
-        correctProperty = Array.FindIndex(propertyArray, val => (val[0] == correctColor && val[1] == correctPrice));
+        correctProperty = Array.FindIndex(propertyArray, val => (val.propColor == correctColor && val.propPrice == correctPrice));
 
         return false;
     }
@@ -511,18 +548,47 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
         {
             CardDisplay[i].text = cardText[shownCard][i];
         }
+
+        #region Display Faucet
         if (shownCard == 7)
         {
-            //UtilityWater.show
+            UtilityWater.SetActive(true);
+            waterShown = true;
         }
+        else if (waterShown)
+        {
+            UtilityWater.SetActive(false);
+            waterShown = false;
+        }
+        #endregion
+
+        #region Display Lightbulb
         if (shownCard == 20)
         {
-            //stuff
+            UtilityElectric.SetActive(true);
+            lightbulbShown = true;
         }
-        
-        // <TextMesh>.fontStyle = FontStyle.<bold/normal>
-        // if (nonStandardCards.Contains(shownCard)) CardDisplay[1].fontStyle = FontStyle.Bold;
-        // else CardDisplay[1].fontStyle = FontStyle.Normal;
+        else if (lightbulbShown)
+        {
+            UtilityElectric.SetActive(false);
+            lightbulbShown = false;
+        }
+        #endregion
+
+        #region Display Train
+        if (shownCard == 2 || shownCard == 10 || shownCard == 17 || shownCard == 25)
+        {
+            RailroadTrain.SetActive(true);
+            trainShown = true;
+        }
+        else if (trainShown)
+        {
+            RailroadTrain.SetActive(false);
+            trainShown = false;
+        }
+        #endregion
+
+        ColorBar.material.color = propertyArray[shownCard].propColor;
 
         return false;
     }
