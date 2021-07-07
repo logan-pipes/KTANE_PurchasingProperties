@@ -17,7 +17,7 @@ using UnityEngine;
 using Newtonsoft.Json;
 
 public class PurchasingPropertiesGameplay : MonoBehaviour {
-    
+
     #region Edgework Utility Classes
     private class Battery
     {
@@ -47,7 +47,7 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
             propColor = colo;
             propPrice = price;
         }
-        
+
         public override bool Equals(object obj)
         {
             if (!(obj is PropertyStruct)) return false;
@@ -118,12 +118,12 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
 
     private int numLitIndicators = 0;
 
-	private bool hasCAR;
-	private bool hasIND;
-	private bool hasFRQ;
-	private bool hasNSA;
-	private bool hasMSA;
-	private bool hasTRN;
+    private bool hasCAR;
+    private bool hasIND;
+    private bool hasFRQ;
+    private bool hasNSA;
+    private bool hasMSA;
+    private bool hasTRN;
     private bool hasFRK;
 
     private bool hasLitIND;
@@ -133,7 +133,7 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
     #endregion
     #endregion
 
-    
+
     // Runs on per module on module creation
     void Start () {
         moduleId = moduleIdCounter++; // Assign each instance a unique ID for deebugging, increment the num total instances
@@ -455,7 +455,7 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
             numPorts += plate.PresentPorts.Length;
         }
         numPortPlates = portList.Count;
-        
+
         // ----- Serial Number -----
         Serial serialNum = JsonConvert.DeserializeObject<Serial>(TheBomb.QueryWidgets(KMBombInfo.QUERYKEY_GET_SERIAL_NUMBER, null)[0]);
         serialNumber = serialNum.serial.ToLower();
@@ -548,7 +548,7 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
 
 
         correctProperty = Array.FindIndex(propertyArray, val => (val.propColor == correctColor && val.propPrice == correctPrice)); // the index of the PropertyStruct that has the same color and price
-        Debug.LogFormat("[Purchasing Properties #{0}] Solution: {1}", moduleId, cardText[correctProperty][0]);
+        Debug.LogFormat("[Purchasing Properties #{0}] Solution: {1}", moduleId, cardText[correctProperty][ new List<int> { 2, 10, 17, 25, 7, 20 }.Contains(correctProperty) ? 1 : 0 ]); // Log the correct property for users
         return false;
     }
 
@@ -632,6 +632,7 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
     {
         if (n <= 1) return false;
         if (n == 2) return true;
+        if (n % 2 == 0) return false;
         int sq = (int)Math.Floor(Math.Sqrt(n));
 
         for (int i = 3; i <= sq; i += 2)
