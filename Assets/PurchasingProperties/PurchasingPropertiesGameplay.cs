@@ -99,6 +99,7 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
     };
     public string[] monopolyPrices = new string[] { "cheap", "middle", "expensive" };
     private PropertyStruct[] propertyArray;
+    private List<int> nonStandardProperties;
 
     private UnityEngine.Color correctColor; // For determining the correct property
     private string correctPrice;
@@ -391,6 +392,7 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
 "Hotels, $200. plus 4 houses"};
         #endregion
 
+        nonStandardProperties = new List<int> { 2, 10, 17, 25, 7, 20 };
         #region Non-Standard Card Text
         cardText[2]  = new string[] {"",
 "READING RAILROAD", "","",
@@ -551,7 +553,7 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
 
 
         correctProperty = Array.FindIndex(propertyArray, val => (val.propColor == correctColor && val.propPrice == correctPrice)); // the index of the PropertyStruct that has the same color and price
-        Debug.LogFormat("[Purchasing Properties #{0}] Solution: {1}", moduleId, cardText[correctProperty][ new List<int> { 2, 10, 17, 25, 7, 20 }.Contains(correctProperty) ? 1 : 0 ]); // Log the correct property for users
+        Debug.LogFormat("[Purchasing Properties #{0}] Solution: {1}", moduleId, cardText[correctProperty][nonStandardProperties.Contains(correctProperty) ? 1 : 0 ]); // Log the correct property for users
         return false;
     }
 
@@ -618,18 +620,12 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
         if (shownCard == correctProperty)
         {
             TheModule.HandlePass();
-            if (cardText[shownCard][0].Equals(""))
-                Debug.LogFormat("[Purchasing Properties #{0}] Property {1} purchased. Module solved.", moduleId, cardText[shownCard][1]);
-            else
-                Debug.LogFormat("[Purchasing Properties #{0}] Property {1} purchased. Module solved.", moduleId, cardText[shownCard][0]);
+            Debug.LogFormat("[Purchasing Properties #{0}] Property {1} purchased. Module solved.", moduleId, cardText[shownCard][nonStandardProperties.Contains(correctProperty) ? 1 : 0]);
         }
         else
         {
             TheModule.HandleStrike();
-            if (cardText[shownCard][0].Equals(""))
-                Debug.LogFormat("[Purchasing Properties #{0}] Attempt to purchase property {1}. Strike.", moduleId, cardText[shownCard][1]);
-            else
-                Debug.LogFormat("[Purchasing Properties #{0}] Attempt to purchase property {1}. Strike.", moduleId, cardText[shownCard][0]);
+            Debug.LogFormat("[Purchasing Properties #{0}] Attempt to purchase property {1}. Strike.", moduleId, cardText[shownCard][nonStandardProperties.Contains(correctProperty) ? 1 : 0]);
         }
 
         return false;
