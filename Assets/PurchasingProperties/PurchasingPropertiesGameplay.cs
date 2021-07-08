@@ -12,7 +12,10 @@
 
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using Newtonsoft.Json;
 
@@ -60,7 +63,7 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
     private const int NUM_CARDS = 28; // For determining which card is shown
     private int shownCard;
 
-    private static int moduleIdCounter = 0; // For assigning unique debug ID's to each instance of the module
+    private static int moduleIdCounter = 1; // For assigning unique debug ID's to each instance of the module
     private int moduleId;
 
     public KMSelectable[] Arrows = new KMSelectable[2]; // Left/Right arrows
@@ -414,7 +417,7 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
 "If 3     \"     \"     \"           100.",
 "If 4     \"     \"     \"           200.", ""};
 
-        cardText[7] = new string[] {"",
+        cardText[20] = new string[] {"",
 "WATER WORKS", "",
 "If one Utility is owned",
 "rent is 4 times amount",
@@ -422,7 +425,7 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
 "If both Utilities are owned",
 "rent is 10 times amount",
 "shown on dice."};
-        cardText[20] = new string[] {"",
+        cardText[7] = new string[] {"",
 "ELECTRIC COMPANY", "",
 "If one Utility is owned",
 "rent is 4 times amount",
@@ -565,7 +568,7 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
         }
 
         #region Display Faucet
-        if (shownCard == 7)
+        if (shownCard == 20)
         {
             UtilityWater.SetActive(true);
             waterShown = true;
@@ -578,7 +581,7 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
         #endregion
 
         #region Display Lightbulb
-        if (shownCard == 20)
+        if (shownCard == 7)
         {
             UtilityElectric.SetActive(true);
             lightbulbShown = true;
@@ -615,12 +618,18 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
         if (shownCard == correctProperty)
         {
             TheModule.HandlePass();
-            Debug.LogFormat("[Purchasing Properties #{0}] Property {1} purchased. Module solved.", moduleId, cardText[shownCard][0]);
+            if (cardText[shownCard][0].Equals(""))
+                Debug.LogFormat("[Purchasing Properties #{0}] Property {1} purchased. Module solved.", moduleId, cardText[shownCard][1]);
+            else
+                Debug.LogFormat("[Purchasing Properties #{0}] Property {1} purchased. Module solved.", moduleId, cardText[shownCard][0]);
         }
         else
         {
             TheModule.HandleStrike();
-            Debug.LogFormat("[Purchasing Properties #{0}] Attempt to purchase property {1}. Strike.", moduleId, cardText[shownCard][0]);
+            if (cardText[shownCard][0].Equals(""))
+                Debug.LogFormat("[Purchasing Properties #{0}] Attempt to purchase property {1}. Strike.", moduleId, cardText[shownCard][1]);
+            else
+                Debug.LogFormat("[Purchasing Properties #{0}] Attempt to purchase property {1}. Strike.", moduleId, cardText[shownCard][0]);
         }
 
         return false;
@@ -646,4 +655,99 @@ public class PurchasingPropertiesGameplay : MonoBehaviour {
     
     // Update is called once per frame
     void Update () {}
+
+    // Twitch Plays support, allows for streamers with the Twitch Plays mod installed to let their chat defuse the module
+    #pragma warning disable 414
+    private readonly string TwitchHelpMessage = @"!{0} purchase <title> [Purchases the property with the specified title]";
+    #pragma warning restore 414
+    IEnumerator ProcessTwitchCommand(string command)
+    {
+        string[] parameters = command.Split(' ');
+        if (Regex.IsMatch(parameters[0], @"^\s*purchase\s*$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+        {
+            yield return null;
+            if (parameters.Length >= 2)
+            {
+                string desiredProperty = "";
+                for (int i = 1; i < parameters.Length; i++)
+                    desiredProperty += parameters[i] + " ";
+                desiredProperty = desiredProperty.Trim();
+                string[] titles = { "MEDITERRANEAN AVENUE", "BALTIC AVENUE", "READING RAILROAD", "ORIENTAL AVENUE", "VERMONT AVENUE", "CONNECTICUT AVENUE", "ST. CHARLES PLACE", "ELECTRIC COMPANY", "STATES AVENUE", "VIRGINIA AVENUE", "PENNSYLVANIA RAILROAD", "ST. JAMES PLACE", "TENNESSEE AVENUE", "NEW YORK AVENUE", "KENTUCKY AVENUE", "INDIANA AVENUE", "ILLINOIS AVENUE", "B&O RAILROAD", "ATLANTIC AVENUE", "VENTNOR AVENUE", "WATER WORKS", "MARVIN GARDENS", "PACIFIC AVENUE", "NORTH CAROLINA AVENUE", "PENNSYLVANIA AVENUE", "SHORT LINE", "PARK PLACE", "BOARDWALK" };
+                int wantedIndex = -1;
+                for (int i = 0; i < 28; i++)
+                {
+                    if (cardText[i][0].Equals(""))
+                    {
+                        if (cardText[i][1].EqualsIgnoreCase(desiredProperty))
+                        {
+                            wantedIndex = i;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        if (cardText[i][0].EqualsIgnoreCase(desiredProperty))
+                        {
+                            wantedIndex = i;
+                            break;
+                        }
+                    }
+                }
+                if (wantedIndex == -1)
+                {
+                    if (titles.Contains(desiredProperty.ToUpper()))
+                        wantedIndex = Array.IndexOf(titles, desiredProperty.ToUpper());
+                }
+                if (wantedIndex == -1)
+                {
+                    yield return "sendtochaterror!f The specified title '" + desiredProperty + "' is invalid!";
+                    yield break;
+                }
+                int diff = wantedIndex - shownCard;
+                if (Math.Abs(diff) > 14)
+                {
+                    diff = Math.Abs(diff) - 28;
+
+                    if (wantedIndex < shownCard)
+                        diff = -diff;
+                }
+                for (int i = 0; i < Math.Abs(diff); i++)
+                {
+                    if (diff > 0)
+                        Arrows[0].OnInteract();
+                    else
+                        Arrows[1].OnInteract();
+                    yield return new WaitForSeconds(0.1f);
+                }
+                SubmitButton.OnInteract();
+            }
+            else if (parameters.Length == 1)
+            {
+                yield return "sendtochaterror Please specify the title of a property to purchase!";
+            }
+            yield break;
+        }
+    }
+
+    // Twitch Plays autosolver, forces the module to solve itself through Twitch Plays if requested
+    IEnumerator TwitchHandleForcedSolve()
+    {
+        int diff = correctProperty - shownCard;
+        if (Math.Abs(diff) > 14)
+        {
+            diff = Math.Abs(diff) - 28;
+
+            if (correctProperty < shownCard)
+                diff = -diff;
+        }
+        for (int i = 0; i < Math.Abs(diff); i++)
+        {
+            if (diff > 0)
+                Arrows[0].OnInteract();
+            else
+                Arrows[1].OnInteract();
+            yield return new WaitForSeconds(0.1f);
+        }
+        SubmitButton.OnInteract();
+    }
 }
